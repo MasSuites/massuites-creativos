@@ -50,9 +50,16 @@ const FILE_ACCEPT: Record<AssetKind, string> = {
   audio: "audio/wav,audio/x-wav,.wav",
 }
 
+// Nombre en espanol de cada tipo de archivo para los mensajes.
+const KIND_ES: Record<AssetKind, string> = {
+  image: "imagen",
+  video: "video",
+  audio: "audio",
+}
+
 const TABS: { value: Tab; label: string }[] = [
-  { value: "uploads", label: "Uploads" },
-  { value: "image", label: "Images" },
+  { value: "uploads", label: "Subidos" },
+  { value: "image", label: "Imágenes" },
   { value: "video", label: "Videos" },
   { value: "audio", label: "Audio" },
 ]
@@ -125,7 +132,7 @@ export function AssetLibraryModal({
       setError(
         caught instanceof Error
           ? caught.message
-          : "Could not attach this media."
+          : "No se pudo adjuntar este archivo."
       )
     }
   }
@@ -148,7 +155,7 @@ export function AssetLibraryModal({
     } else if (canPick(selection.kind)) {
       setSelected((current) => [...current, selection])
     } else {
-      setError(`You can add ${maxSelections} more files to this input.`)
+      setError(`Puedes agregar ${maxSelections} archivos más a esta entrada.`)
     }
   }
 
@@ -158,19 +165,23 @@ export function AssetLibraryModal({
     try {
       const remaining = multiple ? maxSelections - selected.length : 1
       if (files.length > remaining)
-        throw new Error(`Choose up to ${remaining} more files for this input.`)
+        throw new Error(
+          `Elige hasta ${remaining} archivos más para esta entrada.`
+        )
       const pending = selected.map((item) => item.kind)
       for (const file of files) {
         const kind = kindOf(file)
         if (accept && !accept.includes(kind))
-          throw new Error(`Only ${accept.join(" or ")} files can be used here.`)
+          throw new Error(
+            `Aquí solo se pueden usar archivos de ${accept.map((k) => KIND_ES[k]).join(" o ")}.`
+          )
         pending.push(kind)
         if (
           pending.filter((value) => value === kind).length >
           (kindLimits?.[kind] ?? maxSelections)
         )
           throw new Error(
-            `You can add ${kindLimits?.[kind] ?? maxSelections} more ${kind} files.`
+            `Puedes agregar ${kindLimits?.[kind] ?? maxSelections} archivos más de ${KIND_ES[kind]}.`
           )
       }
       setUploading(true)
@@ -188,7 +199,7 @@ export function AssetLibraryModal({
       setError(
         caught instanceof Error
           ? caught.message
-          : "Upload failed — check your connection and try again."
+          : "La subida falló: revisa tu conexión e intenta de nuevo."
       )
     } finally {
       setUploading(false)
@@ -210,9 +221,9 @@ export function AssetLibraryModal({
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger render={trigger} />
       <DialogContent size="xl">
-        <DialogTitle className="sr-only">Asset library</DialogTitle>
+        <DialogTitle className="sr-only">Biblioteca de medios</DialogTitle>
         <DialogDescription className="sr-only">
-          Pick a reference from your uploads or generations.
+          Elige una referencia de tus archivos subidos o de tus generaciones.
         </DialogDescription>
         <div className="q-modal-header q-modal-header-flush px-2 py-1">
           <Tabs
@@ -241,12 +252,13 @@ export function AssetLibraryModal({
           <div className="flex h-[595px] flex-col gap-px overflow-clip rounded-q-400">
             <div className="flex shrink-0 items-center gap-2 bg-q-transparent-light-05 p-2">
               <div className="flex flex-1 items-center gap-2 px-1 text-q-caption-sm-medium text-q-text-secondary">
-                {visible.length} {visible.length === 1 ? "element" : "elements"}
+                {visible.length}{" "}
+                {visible.length === 1 ? "elemento" : "elementos"}
               </div>
               <div className="flex w-48 items-center">
                 <Input
-                  aria-label="Search assets"
-                  placeholder="Search"
+                  aria-label="Buscar en la biblioteca"
+                  placeholder="Buscar"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   start={<Search />}
@@ -322,8 +334,8 @@ export function AssetLibraryModal({
           <DialogFooter
             caption={
               selected.length
-                ? `${selected.length} selected`
-                : "Choose references"
+                ? `${selected.length} seleccionados`
+                : "Elegir referencias"
             }
           >
             <Button
@@ -331,13 +343,13 @@ export function AssetLibraryModal({
               disabled={uploading}
               onClick={() => setSelected([])}
             >
-              Clear selection
+              Quitar selección
             </Button>
             <Button
               disabled={uploading || selected.length === 0}
               onClick={() => commit(selected)}
             >
-              Add {selected.length || "references"}
+              Agregar {selected.length || "referencias"}
             </Button>
           </DialogFooter>
         ) : null}
@@ -383,7 +395,7 @@ function UploadCard({
       </div>
       <div className="px-1 py-0.5">
         <span className="text-q-caption-sm-semi-bold text-q-text-primary">
-          {uploading ? "Uploading…" : "Upload"}
+          {uploading ? "Subiendo…" : "Subir"}
         </span>
       </div>
     </button>
@@ -407,7 +419,7 @@ function ElementCard({
     <button
       type="button"
       onClick={() => onSelect(item)}
-      aria-label={`${selectable ? "Select" : "Use"} ${item.name ?? item.kind}`}
+      aria-label={`${selectable ? "Seleccionar" : "Usar"} ${item.name ?? item.kind}`}
       aria-pressed={selectable ? selected : undefined}
       disabled={disabled}
       className={cn(
@@ -457,7 +469,7 @@ function ElementCard({
           {item.name ?? item.kind}
         </span>
         <span className="truncate text-q-caption-sm-regular text-q-text-secondary">
-          {item.source === "upload" ? "Upload" : "Generation"}
+          {item.source === "upload" ? "Subido" : "Generado"}
         </span>
       </span>
     </button>
@@ -488,12 +500,14 @@ function EmptyState({
       </span>
       <span className="flex flex-col items-center gap-1.5">
         <span className="text-q-label-md-semi-bold text-q-text-primary">
-          {tab === "uploads" ? "No elements yet" : `No ${tab} files yet`}
+          {tab === "uploads"
+            ? "Todavía no hay elementos"
+            : `Todavía no hay archivos de ${KIND_ES[tab]}`}
         </span>
         <span className="max-w-[264px] text-q-caption-sm-medium text-q-text-secondary">
           {tab === "uploads"
-            ? "Upload or drop a file to reuse it across every generation"
-            : "Upload a reference or generate media to see it here"}
+            ? "Sube o arrastra una foto del departamento para reutilizarla en todas las generaciones"
+            : "Sube una referencia o genera algo para verlo aquí"}
         </span>
       </span>
     </div>
@@ -502,7 +516,7 @@ function EmptyState({
     <button
       type="button"
       disabled={uploading}
-      aria-label="Upload media"
+      aria-label="Subir archivo"
       className="flex size-full items-center justify-center disabled:opacity-60"
       onClick={onUpload}
     >

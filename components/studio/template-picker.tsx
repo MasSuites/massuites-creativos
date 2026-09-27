@@ -3,10 +3,14 @@
 
 import type { KeyboardEvent, ReactNode } from "react"
 import {
-  BatteryFull,
-  Calendar,
-  House,
-  WandSparkles,
+  BriefcaseBusiness,
+  Camera,
+  Clapperboard,
+  Film,
+  Globe,
+  MapPin,
+  Megaphone,
+  MoonStar,
   type LucideIcon,
 } from "lucide-react"
 
@@ -14,20 +18,15 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 /**
- * Templates — the "what you can make" examples. A `TemplateItem` seeds the
- * prompt dock (prompt text + optional model/settings) when its Try action fires.
- * `TemplateCard` and `ExamplePresets` render them; the Explore tab on Home uses
+ * Presets — "lo que puedes hacer" para el equipo de MasSuites. Un `TemplateItem`
+ * deja listo el dock (prompt + modelo y ajustes opcionales) al tocar "Usar".
+ * `TemplateCard` y `ExamplePresets` los pintan; la pestana Explorar de Inicio usa
  * `ExamplePresets`.
  */
 
-// PLACEHOLDER ASSETS — demo art in /presets/*.svg. An adapted app replaces
-// every template with bespoke, app-specific examples and real preview media.
-const THUMBS = [
-  "/presets/placeholder-1.svg",
-  "/presets/placeholder-2.svg",
-  "/presets/placeholder-3.svg",
-  "/presets/placeholder-4.svg",
-] as const
+// Portadas de marca en /presets/*.svg (scripts/brand-posters.py). Cuando la app ya tiene
+// salidas reales, layouts/studio.tsx las sustituye por las ultimas generaciones del mismo tipo.
+const POSTER = (name: string) => `/presets/${name}.svg` as const
 
 export interface TemplateItem {
   id: string
@@ -43,53 +42,177 @@ export interface TemplateItem {
   /** Catalog model id to switch to, when the template needs a specific one. */
   modelId?: string
   settings?: Record<string, unknown>
+  /** Consejo corto que se muestra bajo el subtitulo (p. ej. que foto subir antes de generar). */
+  hint?: string
 }
 
-// PLACEHOLDER content — replace when adapting.
+// Los presets de MasSuites: creativos para vender estancias en departamentos amueblados
+// de Queretaro (Instagram, Facebook/Meta, TikTok, Google y massuites.mx). Cada uno deja
+// el prompt listo y, cuando el formato lo exige, fija el modelo y la relacion de aspecto.
+// Los modelos fijados existen en el catalogo instalado (soul-2 y seedance-2.5); si algun
+// dia se quitan, el preset solo cambia de superficie y deja el modelo activo.
+const ESTILO_FOTO =
+  "Fotografia real de interiores, luz natural de dia, colores calidos, encuadre amplio con lente de 24 mm, sin personas, sin texto ni logotipos, estilo Airbnb premium."
+
 export const TEMPLATES: TemplateItem[] = [
   {
-    id: "product-hero",
-    title: "Product hero shot",
-    subtitle: "Studio lighting, larger than life",
-    category: "commercial",
+    id: "reel-recorrido",
+    title: "Reel de recorrido",
+    subtitle: "Video vertical 9:16 para Instagram y TikTok",
+    category: "video",
     kind: "video",
-    images: [THUMBS[0], THUMBS[1], THUMBS[2]],
-    icon: BatteryFull,
+    images: [
+      POSTER("reel-recorrido"),
+      POSTER("post-instagram"),
+      POSTER("historia-llegada"),
+    ],
+    icon: Clapperboard,
     prompt:
-      "Cinematic product hero shot on a dark studio backdrop, slow orbit, soft rim light, dust particles catching the light.",
+      "Recorrido en video de un departamento amueblado en Queretaro: la camara avanza despacio desde la puerta hacia la sala con sofa gris y cojines, sigue a la cocina integral con barra y bancos, y termina en la recamara con cama king tendida en blanco y luz de ventana. Movimiento suave tipo gimbal, luz natural de manana, colores calidos, sin personas, sin texto.",
+    modelId: "seedance-2.5",
+    settings: {
+      aspectRatio: "9:16",
+      duration: 8,
+      resolution: "720p",
+      generateAudio: true,
+    },
+    hint: "Agrega una foto real del depto como referencia para que el recorrido se parezca al espacio.",
   },
   {
-    id: "ugc-review",
-    title: "UGC review",
-    subtitle: "Handheld, creator-style",
-    category: "ugc",
+    id: "post-instagram",
+    title: "Post para Instagram",
+    subtitle: "Imagen cuadrada 1:1, sala o recámara",
+    category: "imagen",
+    kind: "image",
+    images: [
+      POSTER("post-instagram"),
+      POSTER("reel-recorrido"),
+      POSTER("estancia-ejecutiva"),
+    ],
+    icon: Camera,
+    prompt:
+      "Sala de un departamento amueblado en Queretaro lista para recibir huespedes: sofa gris con cojines morados, mesa de centro de madera, planta, television, ventanal con luz de manana y vista a la ciudad. " +
+      ESTILO_FOTO,
+    modelId: "soul-2",
+    settings: { aspectRatio: "1:1", resolution: "1080p", batchSize: "4" },
+    hint: "Salen 4 opciones; elige la mejor y descárgala para el feed.",
+  },
+  {
+    id: "anuncio-meta",
+    title: "Anuncio en Meta",
+    subtitle: "Imagen 3:4 con espacio limpio para el texto de la oferta",
+    category: "imagen",
+    kind: "image",
+    images: [
+      POSTER("anuncio-meta"),
+      POSTER("post-instagram"),
+      POSTER("portada-web"),
+    ],
+    icon: Megaphone,
+    prompt:
+      "Recamara de departamento amueblado en Queretaro con cama king tendida en blanco, cabecera tapizada, buros con lamparas encendidas y cortinas claras; la parte superior de la imagen queda despejada, con pared lisa clara, para sobreponer el texto del anuncio. " +
+      ESTILO_FOTO,
+    modelId: "soul-2",
+    settings: { aspectRatio: "3:4", resolution: "1080p", batchSize: "4" },
+    hint: "El tercio superior queda libre: ahí va el precio o la promoción en el editor de Meta.",
+  },
+  {
+    id: "historia-llegada",
+    title: "Historia: llegas y descansas",
+    subtitle: "Video 9:16 de ambiente, para historias y TikTok",
+    category: "video",
     kind: "video",
-    images: [THUMBS[1], THUMBS[3], THUMBS[0]],
-    icon: WandSparkles,
+    images: [
+      POSTER("historia-llegada"),
+      POSTER("reel-recorrido"),
+      POSTER("queretaro-vida"),
+    ],
+    icon: MoonStar,
     prompt:
-      "Handheld creator-style review filmed on a phone in a sunny kitchen, natural light, casual framing, subtle camera shake.",
+      "Atardecer en un departamento amueblado en Queretaro: las lamparas de la sala se encienden una a una, la ciudad se ve por el ventanal con luces calidas, una taza humeante sobre la barra de la cocina, ambiente tranquilo y acogedor. Camara fija con un ligero acercamiento, sin personas, sin texto.",
+    modelId: "seedance-2.5",
+    settings: {
+      aspectRatio: "9:16",
+      duration: 6,
+      resolution: "720p",
+      generateAudio: true,
+    },
   },
   {
-    id: "editorial-still",
-    title: "Editorial still",
-    subtitle: "Magazine-grade key visual",
-    category: "commercial",
-    kind: "image",
-    images: [THUMBS[2], THUMBS[0], THUMBS[1]],
-    icon: Calendar,
+    id: "foto-a-video",
+    title: "Tu foto, en movimiento",
+    subtitle: "Anima una foto real del departamento",
+    category: "video",
+    kind: "video",
+    images: [
+      POSTER("foto-a-video"),
+      POSTER("reel-recorrido"),
+      POSTER("post-instagram"),
+    ],
+    icon: Film,
     prompt:
-      "Editorial fashion still, 85mm, shallow depth of field, muted palette, single hard light from the left.",
+      "A partir de esta fotografia del departamento, la camara avanza muy despacio hacia el interior con un ligero movimiento lateral; la luz de la ventana cambia sutilmente como si pasara una nube; todo lo demas permanece igual, sin agregar objetos ni personas, sin texto.",
+    modelId: "seedance-2.5",
+    settings: {
+      aspectRatio: "9:16",
+      duration: 5,
+      resolution: "720p",
+      generateAudio: false,
+    },
+    hint: "Sube la foto del departamento como referencia de inicio antes de generar.",
   },
   {
-    id: "lifestyle-home",
-    title: "Lifestyle at home",
-    subtitle: "Warm three-shot story",
-    category: "ugc",
+    id: "queretaro-vida",
+    title: "Querétaro, tu ciudad",
+    subtitle: "Imagen 16:9 de estilo de vida para posts y anuncios",
+    category: "imagen",
     kind: "image",
-    images: [THUMBS[3], THUMBS[2], THUMBS[0]],
-    icon: House,
+    images: [
+      POSTER("queretaro-vida"),
+      POSTER("portada-web"),
+      POSTER("historia-llegada"),
+    ],
+    icon: MapPin,
     prompt:
-      "Warm lifestyle photo of a couple at home in the evening, lamp light, film grain, candid moment.",
+      "Vista de Queretaro al atardecer desde la terraza de un departamento moderno: acueducto y cupulas del centro historico a lo lejos, cielo naranja y morado, dos copas sobre una mesa de terraza en primer plano, sin personas, sin texto. Fotografia real, lente 35 mm, colores calidos.",
+    modelId: "soul-2",
+    settings: { aspectRatio: "16:9", resolution: "1080p", batchSize: "4" },
+  },
+  {
+    id: "estancia-ejecutiva",
+    title: "Estancia ejecutiva",
+    subtitle: "Imagen 3:4 para viajeros de negocios y estancias largas",
+    category: "imagen",
+    kind: "image",
+    images: [
+      POSTER("estancia-ejecutiva"),
+      POSTER("post-instagram"),
+      POSTER("anuncio-meta"),
+    ],
+    icon: BriefcaseBusiness,
+    prompt:
+      "Rincon de trabajo dentro de un departamento amueblado en Queretaro: escritorio de madera junto a la ventana, laptop cerrada, silla comoda, cafetera y taza, planta, luz natural de manana, al fondo la cama tendida. " +
+      ESTILO_FOTO,
+    modelId: "soul-2",
+    settings: { aspectRatio: "3:4", resolution: "1080p", batchSize: "4" },
+  },
+  {
+    id: "portada-web",
+    title: "Portada para massuites.mx",
+    subtitle: "Imagen 16:9 amplia para la página y Google",
+    category: "imagen",
+    kind: "image",
+    images: [
+      POSTER("portada-web"),
+      POSTER("queretaro-vida"),
+      POSTER("post-instagram"),
+    ],
+    icon: Globe,
+    prompt:
+      "Panoramica de la sala y cocina integral de un departamento amueblado en Queretaro, muy luminosa, decoracion contemporanea en tonos neutros con acentos morados, ventanal grande al fondo, todo ordenado y listo para el huesped. " +
+      ESTILO_FOTO,
+    modelId: "soul-2",
+    settings: { aspectRatio: "16:9", resolution: "1080p", batchSize: "4" },
   },
 ]
 
@@ -135,7 +258,7 @@ export function TemplateCard({
   template,
   variant = "single",
   onTry,
-  tryLabel = "Try",
+  tryLabel = "Usar",
 }: TemplateCardProps) {
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return
@@ -148,7 +271,7 @@ export function TemplateCard({
     <div
       role="button"
       tabIndex={0}
-      aria-label={`Use template: ${template.title}`}
+      aria-label={`Usar preset: ${template.title}`}
       className="relative flex cursor-pointer flex-col gap-2 rounded-[20px] bg-white/5 p-2 shadow-[0_2px_6px_rgba(0,0,0,0.15)] transition-[transform,background-color] duration-200 hover:z-[1] hover:-translate-y-0.5 hover:bg-white/8 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none motion-reduce:hover:translate-y-0"
       onClick={() => onTry(template)}
       onKeyDown={onKeyDown}
@@ -165,7 +288,7 @@ export function TemplateCard({
             >
               <img
                 src={src}
-                alt={`${template.title} — shot ${i + 1}`}
+                alt={`${template.title} — toma ${i + 1}`}
                 className="size-full object-cover"
               />
             </div>
@@ -189,6 +312,11 @@ export function TemplateCard({
           <span className="truncate text-xs text-muted-foreground">
             {template.subtitle}
           </span>
+          {template.hint ? (
+            <span className="line-clamp-2 text-[11px] leading-snug text-muted-foreground/80">
+              {template.hint}
+            </span>
+          ) : null}
         </div>
         <Button
           size="sm"
@@ -216,7 +344,7 @@ export interface ExamplePresetsProps {
 export function ExamplePresets({
   items,
   onUse,
-  tryLabel = "Try",
+  tryLabel = "Usar",
   className = "w-full max-w-[900px]",
 }: ExamplePresetsProps) {
   return (
