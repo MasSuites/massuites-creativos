@@ -1,0 +1,20 @@
+# Blueprint de Render para MasSuites Creativos.
+# En dashboard.render.com: New + > Blueprint > este repo > Apply. Render crea el servicio con
+# esta configuracion y vuelve a desplegar en cada push a main. La API key de Higgsfield NO va
+# aqui ni en variables de entorno: cada persona la conecta desde la app (Connect API key).
+services:
+  - type: web
+    name: massuites-creativos
+    runtime: node
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: corepack enable && corepack prepare pnpm@10.28.0 --activate && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: HF_API_BASE_URL
+        value: https://api.higgsfield.ai
