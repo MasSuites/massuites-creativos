@@ -106,7 +106,7 @@ export function useRuns() {
       if (!record || record.status !== "running") return
       try {
         await cancelGeneration({ requestIds: [record.requestId] })
-        update(id, { status: "failed", error: "Canceled" })
+        update(id, { status: "failed", error: "Cancelada" })
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : String(caught))
       }
@@ -132,11 +132,11 @@ function settle(status: GenerationStatus): Partial<RunRecord> {
     return { status: "completed", urls }
   const reason =
     status.status === "nsfw"
-      ? "Blocked by the content filter"
+      ? "Bloqueada por el filtro de contenido"
       : status.status === "canceled"
-        ? "Canceled"
+        ? "Cancelada"
         : (describeError(status.error) ??
-          "The generation did not produce media")
+          "La generación no produjo ningún archivo")
   return { status: "failed", error: reason }
 }
 

@@ -176,8 +176,32 @@ async function readJson(response: Response): Promise<unknown> {
   }
 }
 
+// Lo que ve la persona en el dock cuando Higgsfield contesta con error (docs/concepts/errors):
+// el `detail` del API manda cuando viene; si no, un texto por codigo.
+const STATUS_TEXT: Record<number, string> = {
+  400: "Higgsfield rechazo la peticion (parametros no validos o limite de peticiones simultaneas). Espera a que termine alguna o revisa los ajustes.",
+  401: "Higgsfield no reconoce la API key. Reemplazala en la barra lateral (Manage API key).",
+  402: "La cuenta de Higgsfield no tiene creditos suficientes.",
+  403: "Higgsfield no autorizo la peticion (creditos insuficientes o llave sin permiso).",
+  404: "Higgsfield no encuentra ese modelo o esa peticion en la cuenta.",
+  422: "Higgsfield rechazo los datos enviados (revisa el prompt, las referencias y los ajustes).",
+  423: "Ese modelo esta bloqueado temporalmente en Higgsfield. Intenta mas tarde o cambia de modelo.",
+  429: "Higgsfield limito las peticiones por un momento. Espera e intenta de nuevo.",
+  500: "Error inesperado en Higgsfield. Intenta de nuevo.",
+  503: "Ese modelo no esta disponible en Higgsfield por ahora. Intenta mas tarde o cambia de modelo.",
+}
+
 function messageFromBody(status: number, body: unknown): string {
   const detail = asRecord(body).detail
   if (typeof detail === "string" && detail) return detail
-  return `Platform request failed (${status})`
+  if (Array.isArray(detail) && detail.length) {
+    const partes = detail
+      .map((d) => {
+        const r = asRecord(d)
+        return typeof r.msg === "string" ? r.msg : typeof d === "string" ? d : ""
+      })
+      .filter(Boolean)
+    if (partes.length) return partes.join("; ")
+  }
+  return STATUS_TEXT[status] ?? `Higgsfield contesto con un error (${status}).`
 }

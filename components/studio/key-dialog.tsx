@@ -49,7 +49,7 @@ export function KeyDialog({
       onOpenChange(false)
     } catch (caught) {
       setError(
-        caught instanceof Error ? caught.message : "Could not save the key"
+        caught instanceof Error ? caught.message : "No se pudo guardar la llave"
       )
     } finally {
       setBusy(false)
@@ -89,15 +89,16 @@ export function KeyDialog({
                 >
                   open.higgsfield.ai
                 </a>
-                . Paste it as-is. It is stored in an HTTP-only cookie in
-                this browser and used by the server for API requests.
+                . Paste it as-is. Se guarda en una cookie HTTP-only de este
+                navegador y solo la usa el servidor para hablar con Higgsfield;
+                cada persona del equipo conecta la suya.
               </p>
               <Input
                 autoFocus
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste your API key"
+                placeholder="Pega aquí tu API key"
                 aria-label="Higgsfield API key"
                 autoComplete="off"
                 spellCheck={false}
