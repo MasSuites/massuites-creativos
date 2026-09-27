@@ -58,8 +58,8 @@ export function GenerationCard({
   alt = "",
   media,
   title,
-  generatingLabel = "Generating",
-  failureLabel = "The generation did not produce previewable media.",
+  generatingLabel = "Generando",
+  failureLabel = "La generación no produjo un archivo que se pueda mostrar.",
   className,
   children,
   ...props
@@ -115,7 +115,7 @@ export function GenerationCard({
           role="status"
         >
           <span className="text-sm font-semibold text-foreground">
-            Generation unavailable
+            Generación no disponible
           </span>
           <span className="text-xs text-muted-foreground">{failureLabel}</span>
         </span>
@@ -125,7 +125,7 @@ export function GenerationCard({
   )
 }
 
-/* ── CardActions ──────────────────────────────────────────────────────────── */
+/* ── CardActions ────────────────────────────────────────────────────────────── */
 export interface CardAction {
   id: string
   label: string
@@ -172,7 +172,7 @@ export function CardActions({
       {extra.length > 0 ? (
         <DropdownMenu>
           <DropdownMenuTrigger
-            aria-label="More actions"
+            aria-label="Más acciones"
             className={GLASS}
             onPointerDown={stop}
             onClick={stop}
@@ -225,7 +225,7 @@ export function GenerationTile({
   alt = "",
   media,
   title,
-  generatingLabel = "Generating",
+  generatingLabel = "Generando",
   failureLabel,
   actions,
   children,
@@ -277,8 +277,8 @@ export function GenerationTile({
               aria-label={
                 openLabel ??
                 (generation?.prompt
-                  ? `Open generation: ${generation.prompt}`
-                  : "Open generation")
+                  ? `Abrir generación: ${generation.prompt}`
+                  : "Abrir generación")
               }
               className="absolute inset-0 z-[1] cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none focus-visible:ring-inset"
               onFocus={onFocus}

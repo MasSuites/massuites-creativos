@@ -152,7 +152,7 @@ export function StudioSidebar({
         ) : null}
         <button
           type="button"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-label={collapsed ? "Expandir barra lateral" : "Contraer barra lateral"}
           className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-white/8 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           onClick={() => onCollapsedChange(!collapsed)}
         >
@@ -171,16 +171,16 @@ export function StudioSidebar({
             selected={view.kind === "home"}
             onClick={() => onViewChange({ kind: "home" })}
             start={<IconTile as={House} gradient="blue" />}
-            title="Home"
-            ariaLabel="Home"
+            title="Inicio"
+            ariaLabel="Inicio"
           />
           <Row
             collapsed={collapsed}
             selected={view.kind === "all"}
             onClick={() => onViewChange({ kind: "all" })}
             start={<IconTile as={Images} gradient="purple" />}
-            title="All Generations"
-            ariaLabel="All Generations"
+            title="Todas las generaciones"
+            ariaLabel="Todas las generaciones"
           />
         </div>
 
@@ -193,7 +193,7 @@ export function StudioSidebar({
           >
             {!collapsed ? (
               <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Projects
+                Proyectos
               </span>
             ) : null}
             <ProjectCreateModal
@@ -201,7 +201,7 @@ export function StudioSidebar({
               trigger={
                 <button
                   type="button"
-                  aria-label="New project"
+                  aria-label="Proyecto nuevo"
                   className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-white/8 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                 >
                   <Plus className="size-4" />
@@ -234,7 +234,7 @@ export function StudioSidebar({
                 </span>
               }
               title={project.name}
-              meta={project.generationCount.toLocaleString("en-US")}
+              meta={project.generationCount.toLocaleString("es-MX")}
               action={
                 <ProjectActions
                   projectName={project.name}
@@ -246,7 +246,7 @@ export function StudioSidebar({
           ))}
           {projects.length === 0 && !collapsed ? (
             <p className="px-1.5 py-1 text-xs text-muted-foreground">
-              No projects yet.
+              Todavía no hay proyectos.
             </p>
           ) : null}
         </div>
