@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/fetch-fonts.mjs",
+    "predev": "node scripts/fetch-fonts.mjs && node scripts/brand-posters.mjs",
+    "prebuild": "node scripts/fetch-fonts.mjs && node scripts/brand-posters.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -13,7 +14,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
     "models": "node scripts/sync-models.mjs",
-    "fonts": "node scripts/fetch-fonts.mjs"
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "posters": "node scripts/brand-posters.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

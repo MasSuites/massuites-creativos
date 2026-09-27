@@ -41,3 +41,6 @@ next-env.d.ts
 # fuentes: las baja scripts/fetch-fonts.mjs en prebuild (google/fonts, OFL)
 assets/fonts/*.ttf
 assets/fonts/OFL-Poppins.txt
+
+# portadas de los presets: las genera scripts/brand-posters.mjs en predev/prebuild
+public/presets/*.svg

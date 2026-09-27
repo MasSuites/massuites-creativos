@@ -62,16 +62,18 @@ import { useRuns } from "@/lib/studio/use-runs"
  * Explore / My Projects section, and the UserGenerations feed.
  */
 
-// PLACEHOLDER ASSETS — replaced by the app's real outputs as soon as there are three.
+// Portadas de marca (public/presets, scripts/brand-posters.mjs); en cuanto hay tres salidas
+// reales de imagen, el hero las usa en su lugar.
 const HERO_FALLBACKS = [
-  "/presets/placeholder-2.svg",
-  "/presets/placeholder-1.svg",
-  "/presets/placeholder-3.svg",
+  "/presets/post-instagram.svg",
+  "/presets/reel-recorrido.svg",
+  "/presets/queretaro-vida.svg",
 ] as const
 
+// Atmosfera en el morado institucional (#696598 lavanda sobre el fondo oscuro).
 const HERO_GLOW =
-  "radial-gradient(60% 80% at 50% 0%, rgba(160,164,170,0.14) 0%, rgba(160,164,170,0.05) 42%, transparent 72%)"
-const HERO_DOTS = "radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)"
+  "radial-gradient(60% 80% at 50% 0%, rgba(105,101,152,0.34) 0%, rgba(105,101,152,0.12) 42%, transparent 72%)"
+const HERO_DOTS = "radial-gradient(rgba(239,238,246,0.22) 1px, transparent 1px)"
 const HERO_DOTS_MASK =
   "radial-gradient(55% 70% at 50% 0%, #000 0%, rgba(0,0,0,0.35) 45%, transparent 75%)"
 
@@ -79,6 +81,24 @@ type DockProps = Omit<
   ComponentProps<typeof StudioPromptBox>,
   "className" | "skin"
 >
+
+/** Los presets de imagen enseñan las ultimas salidas reales de imagen en lugar de su
+    portada, repartidas para que no se repita la misma foto en todas las tarjetas. */
+function templatesWithOutputs(
+  templates: TemplateItem[],
+  items: GalleryItem[]
+): TemplateItem[] {
+  const ready = items.filter(
+    (i) => i.status === "ready" && i.kind === "image" && i.src !== ""
+  )
+  if (ready.length === 0) return templates
+  let cursor = 0
+  return templates.map((t) => {
+    if (t.kind !== "image") return t
+    const pick = ready[cursor++ % ready.length]!
+    return { ...t, images: [pick.src, t.images[1], t.images[2]] }
+  })
+}
 
 function heroImages(items: GalleryItem[]): readonly [string, string, string] {
   const ready = items
@@ -114,6 +134,10 @@ function HomeState({
   const [tab, setTab] = useState("explore")
   const promptRef = useRef<HTMLDivElement>(null)
   const images = useMemo(() => heroImages(items), [items])
+  const templates = useMemo(
+    () => templatesWithOutputs(TEMPLATES, items),
+    [items]
+  )
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col items-center overflow-y-auto">
@@ -139,7 +163,10 @@ function HomeState({
           className="flex w-full min-w-0 flex-col items-center gap-8"
         >
           <div className="flex flex-col items-center gap-5">
-            <HeroComposition images={images} alt="Recent Studio outputs" />
+            <HeroComposition
+              images={images}
+              alt="Últimas salidas de MasSuites Creativos"
+            />
             <h1 className="max-w-[640px] text-center text-q-accent-lg-bold uppercase">
               {title}
             </h1>
@@ -156,10 +183,10 @@ function HomeState({
           >
             <TabsList>
               <TabsTrigger value="explore" start={<Compass />}>
-                Explore
+                Explorar
               </TabsTrigger>
               <TabsTrigger value="projects" start={<Folder />}>
-                My Projects
+                Mis proyectos
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -174,7 +201,7 @@ function HomeState({
               />
             ) : (
               <ExamplePresets
-                items={TEMPLATES}
+                items={templates}
                 onUse={(t) => {
                   onUseTemplate(t)
                   promptRef.current?.scrollIntoView({
@@ -230,11 +257,11 @@ function FeedState({
           emptyState={{
             images,
             title:
-              title === "All Generations"
-                ? "No generations yet"
-                : `No generations in ${title}`,
+              title === "Todas las generaciones"
+                ? "Todavía no hay generaciones"
+                : `Todavía no hay generaciones en ${title}`,
             description:
-              "Describe an idea below, then generate the first result.",
+              "Describe abajo la imagen o el video que necesitas, o usa un preset de Inicio, y genera el primero.",
           }}
         />
       </div>
@@ -265,8 +292,8 @@ export interface StudioTemplateProps {
 }
 
 export function StudioTemplate({
-  title = "Studio",
-  headline = "Turn any idea into images and video",
+  title = "MasSuites Creativos",
+  headline = "Imágenes y videos para vender estancias en Querétaro",
 }: StudioTemplateProps) {
   const [view, setView] = useState<StudioView>({ kind: "home" })
   const [collapsed, setCollapsed] = useState(false)
@@ -476,7 +503,7 @@ export function StudioTemplate({
         setLocalError(
           caught instanceof Error
             ? caught.message
-            : "Could not change the image role."
+            : "No se pudo cambiar el papel de la imagen."
         )
       }
     },
@@ -538,7 +565,7 @@ export function StudioTemplate({
           <FeedState
             items={visibleItems}
             previewItems={galleryItems}
-            title={selectedProject?.name ?? "All Generations"}
+            title={selectedProject?.name ?? "Todas las generaciones"}
             dock={dock}
             onDelete={(item) => runs.remove(item.runId)}
           />

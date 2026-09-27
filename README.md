@@ -35,7 +35,7 @@ en el entorno del servidor (ver `.env.example`).
 | `components/studio/` | Piezas del estudio; `template-picker.tsx` trae los presets de MasSuites |
 | `generation/` | Cliente del API de Higgsfield (`platform.ts`), server actions (`actions.ts`), polling con backoff (`poll.ts`), catálogo de modelos (`catalog/models/*.ts`, un archivo por modelo) |
 | `lib/studio/` | Historial y proyectos en el navegador (IndexedDB) |
-| `public/presets/` | Portadas de marca de los presets (`scripts/brand-posters.py` las regenera) |
+| `public/presets/` | Portadas de marca de los presets; `scripts/brand-posters.mjs` las genera en `predev`/`prebuild` (no van en el repo) |
 | `assets/fonts/` | Fuentes OFL servidas localmente; `scripts/fetch-fonts.mjs` las descarga de google/fonts en `prebuild` (no van en el repo) |
 
 ## Cómo se habla con Higgsfield
