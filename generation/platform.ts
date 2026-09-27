@@ -191,9 +191,23 @@ const STATUS_TEXT: Record<number, string> = {
   503: "Ese modelo no esta disponible en Higgsfield por ahora. Intenta mas tarde o cambia de modelo.",
 }
 
+// Codigos que Higgsfield manda en `detail` como identificador (sin espacios).
+const DETAIL_TEXT: Record<string, string> = {
+  not_enough_credits:
+    "La cuenta de Higgsfield no tiene creditos suficientes. Recarga en open.higgsfield.ai (Top up) e intenta de nuevo.",
+  invalid_credentials:
+    "Higgsfield no reconoce la API key. Reemplazala en la barra lateral (Manage API key).",
+}
+
 function messageFromBody(status: number, body: unknown): string {
   const detail = asRecord(body).detail
-  if (typeof detail === "string" && detail) return detail
+  if (typeof detail === "string" && detail) {
+    if (DETAIL_TEXT[detail]) return DETAIL_TEXT[detail]
+    // Un identificador sin espacios se explica con el texto del codigo HTTP.
+    if (/^[a-z0-9_.-]+$/i.test(detail) && STATUS_TEXT[status])
+      return `${STATUS_TEXT[status]} (${detail})`
+    return detail
+  }
   if (Array.isArray(detail) && detail.length) {
     const partes = detail
       .map((d) => {

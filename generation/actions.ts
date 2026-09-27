@@ -13,17 +13,38 @@ import {
   parseCredentialInput,
 } from "./credentials"
 import { createPlatformClient } from "./platform"
-import type { StatusResult } from "./platform"
+import type { QueuedGeneration, StatusResult } from "./platform"
 import { toPlatform } from "./to-platform"
 
-export async function savePlatformCredentials(data: unknown) {
-  const { apiKey } = parseCredentialInput(data)
-  const jar = await cookies()
-  jar.set(
-    PLATFORM_KEY_COOKIE,
-    encodeCredentials(apiKey),
-    PLATFORM_KEY_COOKIE_OPTIONS
-  )
+/** Lo que devuelven las acciones que pueden fallar por culpa de Higgsfield o de la
+    entrada. En produccion Next oculta el mensaje de cualquier error lanzado desde una
+    server action (React #441), asi que el error viaja como valor y el dock lo muestra. */
+export type ActionResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: string }
+
+function failure(caught: unknown): { ok: false; error: string } {
+  return {
+    ok: false,
+    error: caught instanceof Error ? caught.message : String(caught),
+  }
+}
+
+export async function savePlatformCredentials(
+  data: unknown
+): Promise<ActionResult<null>> {
+  try {
+    const { apiKey } = parseCredentialInput(data)
+    const jar = await cookies()
+    jar.set(
+      PLATFORM_KEY_COOKIE,
+      encodeCredentials(apiKey),
+      PLATFORM_KEY_COOKIE_OPTIONS
+    )
+    return { ok: true, value: null }
+  } catch (caught) {
+    return failure(caught)
+  }
 }
 
 export async function clearPlatformCredentials() {
@@ -38,14 +59,24 @@ export async function hasPlatformCredentials() {
   return (await readStoredCredentials()) !== null
 }
 
-export async function submitGeneration(plane: GenerationPlane) {
-  const model = getModel(plane.model)
-  const parsed: GenerationPlane = {
-    ...plane,
-    settings: parseSettings(model, plane.settings),
+export async function submitGeneration(
+  plane: GenerationPlane
+): Promise<ActionResult<QueuedGeneration>> {
+  try {
+    const model = getModel(plane.model)
+    const parsed: GenerationPlane = {
+      ...plane,
+      settings: parseSettings(model, plane.settings),
+    }
+    const { path, body } = toPlatform(parsed)
+    const queued = await createPlatformClient(await readCredentials()).submit(
+      path,
+      body
+    )
+    return { ok: true, value: queued }
+  } catch (caught) {
+    return failure(caught)
   }
-  const { path, body } = toPlatform(parsed)
-  return createPlatformClient(await readCredentials()).submit(path, body)
 }
 
 /** Every request in flight, answered in one round trip. Next dispatches server
@@ -71,9 +102,16 @@ export async function getGenerationStatuses(
   )
 }
 
-export async function cancelGeneration(data: unknown) {
-  const [requestId] = parseRequestIds(data)
-  await createPlatformClient(await readCredentials()).cancel(requestId!)
+export async function cancelGeneration(
+  data: unknown
+): Promise<ActionResult<null>> {
+  try {
+    const [requestId] = parseRequestIds(data)
+    await createPlatformClient(await readCredentials()).cancel(requestId!)
+    return { ok: true, value: null }
+  } catch (caught) {
+    return failure(caught)
+  }
 }
 
 async function readStoredCredentials() {

@@ -43,7 +43,11 @@ export function KeyDialog({
     setBusy(true)
     setError(null)
     try {
-      await savePlatformCredentials({ api_key: apiKey })
+      const result = await savePlatformCredentials({ api_key: apiKey })
+      if (!result.ok) {
+        setError(result.error)
+        return
+      }
       setApiKey("")
       onChange(true)
       onOpenChange(false)

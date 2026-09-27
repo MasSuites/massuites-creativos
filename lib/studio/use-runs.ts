@@ -74,7 +74,12 @@ export function useRuns() {
       setError(null)
       const model = getModel(plane.model)
       try {
-        const queued = await submitGeneration(plane)
+        const result = await submitGeneration(plane)
+        if (!result.ok) {
+          setError(result.error)
+          return null
+        }
+        const queued = result.value
         const record: RunRecord = {
           id: queued.requestId,
           requestId: queued.requestId,
@@ -105,7 +110,13 @@ export function useRuns() {
       const record = records.find((r) => r.id === id)
       if (!record || record.status !== "running") return
       try {
-        await cancelGeneration({ requestIds: [record.requestId] })
+        const result = await cancelGeneration({
+          requestIds: [record.requestId],
+        })
+        if (!result.ok) {
+          setError(result.error)
+          return
+        }
         update(id, { status: "failed", error: "Cancelada" })
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : String(caught))
