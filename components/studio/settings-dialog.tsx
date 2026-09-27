@@ -44,13 +44,13 @@ export function SettingsDialog({
       <DialogTrigger render={trigger} />
       <DialogContent size="sm">
         <DialogHeader>
-          <DialogTitle>{model.label} settings</DialogTitle>
-          <DialogDescription>Applied to the next generation.</DialogDescription>
+          <DialogTitle>Ajustes de {model.label}</DialogTitle>
+          <DialogDescription>Se aplica a la siguiente generación.</DialogDescription>
         </DialogHeader>
         <DialogBody>
           {entries.length === 0 ? (
             <p className="text-q-body-sm-regular text-q-text-secondary">
-              This model has no settings.
+              Este modelo no tiene ajustes.
             </p>
           ) : (
             <div className="flex flex-col gap-1">
@@ -71,7 +71,26 @@ export function SettingsDialog({
   )
 }
 
+// Nombres en espanol de los ajustes que traen los modelos del catalogo; lo que no este
+// aqui se deriva del nombre de la clave (camelCase -> palabras).
+const SETTING_LABELS: Record<string, string> = {
+  aspectRatio: "Relación de aspecto",
+  resolution: "Resolución",
+  duration: "Duración (segundos)",
+  generateAudio: "Generar audio",
+  sound: "Sonido",
+  keepOriginalSound: "Conservar el sonido original",
+  enhancePrompt: "Mejorar el prompt",
+  batchSize: "Imágenes por generación",
+  bitrateMode: "Calidad de video",
+  cfgScale: "Apego al prompt (CFG)",
+  multiShots: "Varias tomas",
+  characterOrientation: "Orientación del personaje",
+}
+
 export function settingLabel(key: string): string {
+  const known = SETTING_LABELS[key]
+  if (known) return known
   return key
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/_/g, " ")
