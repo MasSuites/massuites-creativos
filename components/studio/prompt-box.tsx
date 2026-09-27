@@ -39,7 +39,7 @@ import { cn as cx } from "@/lib/utils"
  *       <PromptBox.Actions>
  *         <PromptBox.Pill iconOnly aria-label="Add" start={<PlusIcon />} />
  *         <PromptBox.Pill start={<Avatar/>} end={<ChevronIcon/>}>UGC</PromptBox.Pill>
- *         <PromptBox.Pill iconOnly aria-label="Settings" start={<SlidersIcon />} />
+ *         <PromptBox.Pill iconOnly aria-label="Ajustes" start={<SlidersIcon />} />
  *       </PromptBox.Actions>
  *     </PromptBox.Body>
  *
@@ -82,7 +82,7 @@ const SURFACE_CLASS = {
   glass: "q-prompt-box-glass",
 } satisfies Record<PromptBoxSurface, string>
 
-/* ── Root ──────────────────────────────────────────────────────────────────── */
+/* --- Root --- */
 export type PromptBoxRootProps = ComponentProps<"div"> & {
   /** Dock skin: the plain centered dock (default) or the frosted floating bar. */
   surface?: PromptBoxSurface
@@ -120,7 +120,7 @@ function Root({
   )
 }
 
-/* ── Mode rail + Mode ──────────────────────────────────────────────────────── */
+/* --- Mode rail + Mode --- */
 export type PromptBoxModeRailProps = ComponentProps<"div"> & {
   /** Unmount the whole generation-mode toggle (renders `null`). */
   hidden?: boolean
@@ -187,7 +187,7 @@ function Mode({
   return hidden ? null : element
 }
 
-/* ── Body (the two-layer prompt surface) ───────────────────────────────────── */
+/* --- Body (the two-layer prompt surface) --- */
 export type PromptBoxBodyProps = ComponentProps<"div"> & {
   /** Class for the inner white-5% surface that hosts the field + actions. */
   surfaceClassName?: string
@@ -207,7 +207,7 @@ function Body({
   )
 }
 
-/* ── Field (the borderless prompt text area) ───────────────────────────────── */
+/* --- Field (the borderless prompt text area) --- */
 export type PromptBoxFieldProps = Omit<ComponentProps<"textarea">, "children">
 function Field({ className, rows = 1, ...props }: PromptBoxFieldProps) {
   return (
@@ -219,12 +219,12 @@ function Field({ className, rows = 1, ...props }: PromptBoxFieldProps) {
   )
 }
 
-/* ── Actions (the footer pill row) ─────────────────────────────────────────── */
+/* --- Actions (the footer pill row) --- */
 function Actions({ className, ...props }: ComponentProps<"div">) {
   return <div className={cx("q-prompt-box-actions", className)} {...props} />
 }
 
-/* ── Pill (a setting control / dropdown trigger) ───────────────────────────── */
+/* --- Pill (a setting control / dropdown trigger) --- */
 export type PromptBoxPillProps = Omit<
   ComponentPropsWithRef<"button">,
   "children"
@@ -283,7 +283,7 @@ function Pill({
   return hidden ? null : element
 }
 
-/* ── Uploads + Upload (reference-image tiles) ──────────────────────────────── */
+/* --- Uploads + Upload (reference-image tiles) --- */
 export type PromptBoxUploadsProps = ComponentProps<"div"> & {
   /** Unmount the whole reference-tile strip (renders `null`). */
   hidden?: boolean
@@ -396,7 +396,7 @@ function PlusGlyph() {
   )
 }
 
-/* ── Generate (the special lime CTA) ───────────────────────────────────────── */
+/* --- Generate (the special lime CTA) --- */
 export type PromptBoxGenerateProps = Omit<
   ComponentPropsWithRef<"button">,
   "children"
@@ -407,7 +407,7 @@ export type PromptBoxGenerateProps = Omit<
   oldCost?: ReactNode
   /** Leading glyph (defaults to the sparkles mark). */
   start?: ReactNode
-  /** Button label (defaults to "Generate"). */
+  /** Button label (defaults to "Generar"). */
   children?: ReactNode
   /** Swap the host element. Defaults to a `<button>`. */
   render?: ReactElement
@@ -416,7 +416,7 @@ function Generate({
   cost,
   oldCost,
   start,
-  children = "Generate",
+  children = "Generar",
   render,
   className,
   ref,

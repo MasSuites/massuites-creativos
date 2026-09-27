@@ -125,7 +125,7 @@ export function GenerationCard({
   )
 }
 
-/* ── CardActions ────────────────────────────────────────────────────────────── */
+/* --- CardActions --- */
 export interface CardAction {
   id: string
   label: string
@@ -196,7 +196,7 @@ export function CardActions({
   )
 }
 
-/* ── GenerationTile ───────────────────────────────────────────────────────── */
+/* --- GenerationTile --- */
 export interface GenerationTileProps {
   state?: GenerationCardState
   generation?: GenerationDetail

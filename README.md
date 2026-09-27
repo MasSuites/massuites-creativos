@@ -1,116 +1,76 @@
-# Higgsfield app templates
+# MasSuites Creativos
 
-Production-ready app templates on Next.js 16, Tailwind v4 and shadcn, generating
-through the [Higgsfield platform API](https://api.higgsfield.ai). Shipped as
-a [shadcn registry](https://ui.shadcn.com/docs/registry), so one command
-scaffolds a project and one command adds a model.
+Estudio para que Ventas y Marketing de MasSuites generen **imágenes y videos** para
+promocionar los departamentos amueblados en Querétaro (Instagram, Facebook/Meta, TikTok,
+Google y massuites.mx) con los modelos de [Higgsfield](https://open.higgsfield.ai)
+(Seedance, Kling, Soul, Flux, Wan y más), en el morado institucional y con presets en español.
 
-Templates: **studio** (available now), preset and app-detail (next).
+Construido sobre el template **Studio** de Higgsfield (Next.js 16 + Tailwind v4 + shadcn/Base UI).
 
-## One command, new project
-
-Run from a directory that is not already a project:
+## Arrancar
 
 ```sh
-# studio with every model
-pnpm dlx shadcn@latest init -t next -n my-studio --no-monorepo -y higgsfield-ai/app-templates/studio
-
-# studio with an empty model catalog
-pnpm dlx shadcn@latest init -t next -n my-studio --no-monorepo -y higgsfield-ai/app-templates/studio-bare
-
-# studio with a chosen set of models
-pnpm dlx shadcn@latest init -t next -n my-studio --no-monorepo -y \
-  higgsfield-ai/app-templates/studio-bare \
-  higgsfield-ai/app-templates/seedance-2.5 \
-  higgsfield-ai/app-templates/kling-3
+pnpm install
+pnpm dev          # http://localhost:3000
 ```
 
-Then:
+1. Abre la app y toca **Connect API key** en la barra lateral.
+2. Pega la API key completa copiada de <https://open.higgsfield.ai/api-keys> tal cual
+   (no se separa ni se edita). Queda en una cookie HTTP-only de tu navegador; el servidor
+   es el único que habla con Higgsfield.
+3. En Inicio, toca **Usar** en un preset (Reel de recorrido, Post para Instagram, Anuncio en
+   Meta, Historia, Tu foto en movimiento, Querétaro tu ciudad, Estancia ejecutiva, Portada
+   para massuites.mx), ajusta el texto y **Generar**. Para animar una foto real del
+   departamento, súbela con el botón **+** del dock antes de generar.
+
+Para producción: `pnpm build && pnpm start`, con `HF_API_BASE_URL=https://api.higgsfield.ai`
+en el entorno del servidor (ver `.env.example`).
+
+## Qué hay adentro
+
+| Carpeta | Qué es |
+|---|---|
+| `app/` | App Router de Next: `layout.tsx` (fuentes locales Poppins/Inter/IBM Plex Mono, metadatos), `api/upload/route.ts` (URL firmada para subir referencias con la llave guardada) |
+| `layouts/studio.tsx` | La pantalla del estudio: barra lateral de proyectos, hero, dock de prompt, presets, feed |
+| `components/studio/` | Piezas del estudio; `template-picker.tsx` trae los presets de MasSuites |
+| `generation/` | Cliente del API de Higgsfield (`platform.ts`), server actions (`actions.ts`), polling con backoff (`poll.ts`), catálogo de modelos (`catalog/models/*.ts`, un archivo por modelo) |
+| `lib/studio/` | Historial y proyectos en el navegador (IndexedDB) |
+| `public/presets/` | Portadas de marca de los presets (`scripts/brand-posters.py` las regenera) |
+| `assets/fonts/` | Fuentes OFL servidas localmente; `scripts/fetch-fonts.mjs` las descarga de google/fonts en `prebuild` (no van en el repo) |
+
+## Cómo se habla con Higgsfield
+
+- Envío: `POST https://api.higgsfield.ai/<ruta-del-modelo>` con `Authorization: Key <api-key>`.
+- Estado: `GET /requests/<request_id>/status` hasta `completed` / `failed` / `nsfw` / `canceled`,
+  empezando cada 2 s y espaciando hasta 10 s (todas las peticiones en vuelo en una sola
+  ronda). Sin `Retry-After`: el límite de concurrencia llega como `400`.
+- Cancelar: `POST /requests/<request_id>/cancel` (solo mientras está en cola).
+- Referencias: el servidor pide `POST /files/generate-upload-url`; el navegador hace el `PUT`
+  a la URL firmada con los encabezados que devuelve y sin credenciales; la `public_url` se usa
+  solo si el `PUT` salió bien. Las URL firmadas nunca se escriben en logs.
+- Un envío que se quede sin respuesta **no se reintenta solo** (el API no acepta clave de
+  idempotencia): queda como fallido en el feed y la persona decide.
+
+## Modelos
+
+El catálogo completo del template está instalado (28 archivos en `generation/catalog/models/`;
+el barrel `models.generated.ts` se regenera solo en `pnpm dev` / `pnpm build`, no se edita a
+mano). Agregar o refrescar uno:
 
 ```sh
-cd my-studio && pnpm dev
+pnpm dlx shadcn@latest list higgsfield-ai/app-templates
+pnpm dlx shadcn@latest add  higgsfield-ai/app-templates/<modelo>
 ```
 
-Open http://localhost:3000, click **Connect API key** in the sidebar and paste the
-API key copied from https://open.higgsfield.ai/api-keys. The key is stored
-in an httpOnly cookie; authenticated platform calls stay on the server.
-Reference uploads use the same key to obtain a signed Higgsfield storage URL.
-The browser uploads directly with the returned headers, without receiving the
-key. No separate storage account or token is required.
-
-## Add or update models
-
-`studio` installs the full catalog by default. When adapting the app, preserve
-every installed model in its image/video picker unless the user explicitly asks
-for a smaller catalog. If only some models have been tested against the live API,
-report that limitation and keep the others available. See the model-preservation
-rule in [AGENTS.md](AGENTS.md).
-
-Every model is one file in `generation/catalog/models/`. The dev server watches
-that directory and regenerates the barrel, so a freshly added model shows up in
-the picker without a restart.
+## Verificar
 
 ```sh
-pnpm dlx shadcn@latest list   higgsfield-ai/app-templates
-pnpm dlx shadcn@latest search higgsfield-ai/app-templates -q kling
-pnpm dlx shadcn@latest add    higgsfield-ai/app-templates/seedance-2.5
-pnpm dlx shadcn@latest add    higgsfield-ai/app-templates/models          # all of them
-pnpm dlx shadcn@latest add    higgsfield-ai/app-templates/kling-3 --overwrite   # refresh
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
-Pin a version with `#ref`: `higgsfield-ai/app-templates/studio#v1.0.0`.
+## Llave compartida (opcional, no configurado)
 
-## Environment
-
-`shadcn init` writes these to `.env.local`:
-
-| Variable                | Purpose                                                        |
-| ----------------------- | -------------------------------------------------------------- |
-| `HF_API_BASE_URL`       | Platform API base, prefilled with `https://api.higgsfield.ai` |
-
-## Working on the templates
-
-```sh
-git clone git@github.com:higgsfield-ai/app-templates.git
-cd app-templates && pnpm install && cp .env.example .env && pnpm dev
-```
-
-| Command               | What it does                                                    |
-| --------------------- | --------------------------------------------------------------- |
-| `pnpm dev`            | Dev server on :3000 (also serves the built registry at `/r/*`) |
-| `pnpm typecheck`      | `tsc --noEmit`                                                  |
-| `pnpm test`           | Credentials, uploads, and model input tests (Node.js 22.15+)    |
-| `pnpm models`         | Regenerate the models barrel and `models/registry.json`         |
-| `pnpm registry:build` | `pnpm models` + `shadcn build` → `public/r/*.json`              |
-| `pnpm build`          | Production build (runs `registry:build` first)                  |
-
-Add a model: create `generation/catalog/models/<name>.ts` with a default export
-(see any neighbour), run `pnpm models`, then
-`pnpm exec shadcn registry validate ./registry.json`. Commit and push; GitHub
-addresses resolve against the default branch.
-
-Test the registry locally from another directory:
-
-```sh
-pnpm dlx shadcn@latest list http://localhost:3000/r/registry.json
-pnpm dlx shadcn@latest add  http://localhost:3000/r/seedance-2.5.json
-```
-
-## Layout
-
-```
-app/                     Next.js App Router, globals.css, /api/upload signed URL route
-layouts/studio.tsx       The Studio screen (read layouts/AGENTS.md)
-components/studio/       Prompt dock, gallery, dialogs, presets (read components/studio/AGENTS.md)
-components/ui/           shadcn primitives (Base UI)
-generation/              Platform client, server actions, polling, stores
-generation/catalog/      Model catalog: models/*.ts, mappers, generated barrel
-lib/studio/              Browser-local history (IndexedDB), projects, uploads, useRuns
-registry.json            shadcn registry root (studio, studio-bare; models are included)
-scripts/sync-models.mjs  Regenerates the barrel + models registry
-```
-
-No `src/` directory, on purpose: the shadcn Next template uses a root layout,
-and template files have to land on top of it.
-
-`AGENTS.md` is the contract for agents adapting a scaffolded app.
+Hoy cada persona conecta su propia llave. Si Dirección prefiere una llave única del negocio,
+la adaptación es: leer `HF_API_KEY` (solo servidor) en `generation/actions.ts` y en la ruta de
+subida, guardar cada `request_id` con el usuario que lo creó y verificar esa propiedad antes de
+devolver estado, resultados o cancelar. El historial del navegador no es un control de acceso.
