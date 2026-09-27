@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils"
  * `ExamplePresets`.
  */
 
-// Portadas de marca en /presets/*.svg (scripts/brand-posters.py). Cuando la app ya tiene
+// Portadas de marca en /presets/*.svg (scripts/brand-posters.mjs). Cuando la app ya tiene
 // salidas reales, layouts/studio.tsx las sustituye por las ultimas generaciones del mismo tipo.
 const POSTER = (name: string) => `/presets/${name}.svg` as const
 
