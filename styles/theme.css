@@ -6,8 +6,8 @@
  * Dark only — data-theme is pinned in app/layout.tsx.
  */
 :root[data-theme="default-dark"] {
-    --hf-type-family-grotesk-base: var(--font-space-grotesk), "Space Grotesk";
-    --hf-type-family-primary-base: var(--font-space-grotesk), "Space Grotesk";
+    --hf-type-family-grotesk-base: var(--font-space-grotesk), "Poppins", "Space Grotesk";
+    --hf-type-family-primary-base: var(--font-space-grotesk), "Poppins", "Space Grotesk";
     --hf-type-family-secondary-base: var(--font-inter), "Inter";
     --hf-type-family-mono-base: var(--font-ibm-plex-mono), "IBM Plex Mono";
 

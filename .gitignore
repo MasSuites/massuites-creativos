@@ -35,6 +35,9 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# shadcn registry build output
-/public/r
+# la plantilla de variables si se versiona
 !.env.example
+
+# fuentes: las baja scripts/fetch-fonts.mjs en prebuild (google/fonts, OFL)
+assets/fonts/*.ttf
+assets/fonts/OFL-Poppins.txt

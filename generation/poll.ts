@@ -4,7 +4,12 @@ import type { GenerationStatus, StatusResult } from "./platform"
 /** Statuses the platform never moves off again. */
 const TERMINAL = new Set(["completed", "failed", "nsfw", "canceled"])
 
-export const POLL_INTERVAL_MS = 4000
+/** Backoff de la documentacion de Higgsfield (docs/concepts/polling): empezar en 2 s,
+    crecer x1.5 por ronda hasta 10 s, con un poco de jitter; vuelve a 2 s cuando entra
+    una peticion nueva. */
+export const POLL_INTERVAL_MS = 2000
+export const POLL_INTERVAL_MAX_MS = 10_000
+export const POLL_BACKOFF = 1.5
 export const POLL_DEADLINE_MS = 10 * 60_000
 /** Rounds allowed to fail back to back before the watches are given up on. One
     dropped round must not end every generation in flight. */
@@ -21,6 +26,7 @@ const inflight = new Map<string, Promise<GenerationStatus>>()
 let timer: ReturnType<typeof setTimeout> | null = null
 let polling = false
 let misses = 0
+let interval = POLL_INTERVAL_MS
 
 /** Resolves when the platform reports a terminal status for this request.
     Every request in flight is asked for together, in one server action per
@@ -33,6 +39,7 @@ export function watchRequest(
 ): Promise<GenerationStatus> {
   const existing = inflight.get(requestId)
   if (existing) return existing
+  interval = POLL_INTERVAL_MS // una peticion nueva vuelve a preguntar pronto
   const promise = new Promise<GenerationStatus>((resolve, reject) => {
     waiting.set(requestId, {
       deadline: opts?.deadline ?? Date.now() + POLL_DEADLINE_MS,
@@ -58,13 +65,16 @@ export function stopWatching(): void {
   if (timer !== null) clearTimeout(timer)
   timer = null
   misses = 0
+  interval = POLL_INTERVAL_MS
   waiting.clear()
   inflight.clear()
 }
 
 function schedule(): void {
   if (timer !== null || polling || waiting.size === 0) return
-  timer = setTimeout(() => void round(), POLL_INTERVAL_MS)
+  const jitter = Math.random() * 500
+  timer = setTimeout(() => void round(), interval + jitter)
+  interval = Math.min(POLL_INTERVAL_MAX_MS, Math.round(interval * POLL_BACKOFF))
 }
 
 async function round(): Promise<void> {
@@ -106,7 +116,7 @@ function sweep(): void {
   for (const [requestId, waiter] of [...waiting]) {
     if (now <= waiter.deadline) continue
     waiting.delete(requestId)
-    waiter.reject(new Error("timed out waiting for the platform"))
+    waiter.reject(new Error("Higgsfield tardó demasiado en contestar; vuelve a intentarlo"))
   }
 }
 
